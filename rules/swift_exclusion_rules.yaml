@@ -1,0 +1,1636 @@
+rules:
+- id: EXTERNAL_FILE_REFERENCE
+  description: Symbols directly referenced from resources or Obj-C headers
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.isReferencedByExternalFile == true
+- id: OS_ENTRY_POINT_DELEGATES
+  description: Core classes directly referenced by OS by name (AppDelegate, SceneDelegate, etc.)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.name in ['AppDelegate', 'SceneDelegate', 'WindowSceneDelegate']
+- id: OBJC_ATTRIBUTE
+  description: Symbols exposed to Objective-C runtime via @objc or @objcMembers attributes
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.attributes contains_any ['@objc', '@objcMembers']
+- id: UI_FRAMEWORK_SUBCLASSES
+  description: All subclasses of major UI framework classes
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind in ['class', 'struct']
+    - C.typeInheritanceChain contains_any ['UIViewController', 'UINavigationController', 'UITabBarController', 'UIView', 'UIResponder', 'UITableViewCell', 'UICollectionViewCell', 'UITableViewController', 'UICollectionReusableView', 'UIControl', 'UIScrollView', 'UIStackView', 'UIButton', 'UILabel', 'UIImageView', 'UITextField', 'UITextView', 'UISearchBar', 'UISegmentedControl', 'UISwitch', 'UISlider', 'UIPickerView', 'UIDatePicker', 'UIPageControl', 'UIStepper', 'UIActivityIndicatorView', 'UIProgressView', 'UIAlertController', 'UIPopoverPresentationController', 'UIGestureRecognizer', 'NSViewController', 'NSView', 'NSControl', 'NSTableView', 'NSCollectionView']
+- id: AVFOUNDATION_SUBCLASSES
+  description: Subclasses of major AVFoundation classes
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind in ['class', 'struct']
+    - C.typeInheritanceChain contains_any ['AVCaptureSession', 'AVCaptureDevice', 'AVCaptureInput', 'AVCaptureOutput', 'AVCaptureConnection', 'AVCapturePhotoOutput', 'AVCaptureVideoDataOutput', 'AVCaptureMetadataOutput', 'AVCaptureFileOutput', 'AVCaptureMovieFileOutput', 'AVAsset', 'AVPlayer', 'AVPlayerItem', 'AVPlayerLayer']
+- id: AVFOUNDATION_DELEGATE_METHODS
+  description: AVFoundation delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['captureOutput', 'fileOutput', 'metadataOutput', 'photoOutput', 'capturePhoto', 'didFinishProcessingPhoto', 'didFinishRecordingTo', 'didStartRecordingTo', 'didPauseRecording', 'didResumeRecording']
+    - M.typeInheritanceChain contains_any ['AVCapturePhotoCaptureDelegate', 'AVCaptureFileOutputRecordingDelegate', 'AVCaptureVideoDataOutputSampleBufferDelegate', 'AVCaptureMetadataOutputObjectsDelegate']
+- id: SYSTEM_LIFECYCLE_METHODS
+  description: UIKit/AppKit lifecycle methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['viewDidLoad', 'viewWillAppear', 'viewDidAppear', 'viewWillDisappear', 'viewDidDisappear', 'viewWillLayoutSubviews', 'viewDidLayoutSubviews', 'viewWillTransition', 'loadView', 'viewIsAppearing', 'willMove', 'didMove', 'updateViewConstraints', 'encodeRestorableState', 'decodeRestorableState', 'awakeFromNib', 'prepareForInterfaceBuilder', 'didReceiveMemoryWarning', 'traitCollectionDidChange', 'preferredStatusBarStyle', 'prefersStatusBarHidden', 'layoutSubviews', 'draw', 'setNeedsLayout', 'layoutIfNeeded', 'setNeedsDisplay']
+    - M.typeInheritanceChain contains_any ['UIViewController', 'UIView', 'UIResponder', 'NSViewController', 'NSView']
+- id: TOUCH_EVENT_METHODS
+  description: Touch and gesture event methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['touchesBegan', 'touchesMoved', 'touchesEnded', 'touchesCancelled', 'touchesEstimatedPropertiesUpdated', 'pressesBegan', 'pressesChanged', 'pressesEnded', 'pressesCancelled', 'motionBegan', 'motionEnded', 'motionCancelled', 'canPerformAction', 'canBecomeFirstResponder', 'becomeFirstResponder', 'canResignFirstResponder', 'resignFirstResponder']
+    - M.typeInheritanceChain contains_any ['UIResponder', 'UIView', 'UIViewController']
+- id: APPDELEGATE_SCENEDELEGATE_METHODS
+  description: AppDelegate and SceneDelegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['application', 'applicationWillFinishLaunching', 'applicationDidFinishLaunching', 'applicationDidBecomeActive', 'applicationWillResignActive', 'applicationDidEnterBackground', 'applicationWillEnterForeground', 'applicationWillTerminate', 'applicationDidReceiveMemoryWarning', 'scene', 'sceneWillConnect', 'sceneDidDisconnect', 'sceneDidBecomeActive', 'sceneWillResignActive', 'sceneWillEnterForeground', 'sceneDidEnterBackground', 'openURLContexts', 'continueUserActivity']
+    - M.parent.name in ['AppDelegate', 'SceneDelegate']
+- id: UITABLEVIEW_DELEGATE_DATASOURCE
+  description: UITableView delegate/datasource methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['numberOfSections', 'numberOfRowsInSection', 'cellForRowAt', 'titleForHeaderInSection', 'titleForFooterInSection', 'canEditRowAt', 'canMoveRowAt', 'commit', 'moveRowAt', 'willDisplay', 'didEndDisplaying', 'heightForRowAt', 'heightForHeaderInSection', 'heightForFooterInSection', 'estimatedHeightForRowAt', 'estimatedHeightForHeaderInSection', 'estimatedHeightForFooterInSection', 'viewForHeaderInSection', 'viewForFooterInSection', 'willSelectRowAt', 'willDeselectRowAt', 'didSelectRowAt', 'didDeselectRowAt', 'editingStyleForRowAt', 'shouldIndentWhileEditingRowAt', 'willBeginEditingRowAt', 'didEndEditingRowAt', 'contextMenuConfigurationForRowAt']
+    - M.typeInheritanceChain contains_any ['UITableViewDelegate', 'UITableViewDataSource', 'UIViewController', 'UITableViewController']
+- id: UICOLLECTIONVIEW_DELEGATE_DATASOURCE
+  description: UICollectionView delegate/datasource methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['numberOfSections', 'numberOfItemsInSection', 'cellForItemAt', 'viewForSupplementaryElementOfKind', 'canMoveItemAt', 'moveItemAt', 'willDisplay', 'willDisplaySupplementaryView', 'didEndDisplaying', 'didEndDisplayingSupplementaryView', 'shouldSelectItemAt', 'shouldDeselectItemAt', 'didSelectItemAt', 'didDeselectItemAt', 'contextMenuConfigurationForItemAt', 'sizeForItemAt']
+    - M.typeInheritanceChain contains_any ['UICollectionViewDelegate', 'UICollectionViewDataSource', 'UICollectionViewDelegateFlowLayout', 'UIViewController']
+- id: UISCROLLVIEW_DELEGATE
+  description: UIScrollView delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['scrollViewDidScroll', 'scrollViewWillBeginDragging', 'scrollViewWillEndDragging', 'scrollViewDidEndDragging', 'scrollViewShouldScrollToTop', 'scrollViewDidScrollToTop', 'scrollViewWillBeginDecelerating', 'scrollViewDidEndDecelerating', 'viewForZooming', 'scrollViewWillBeginZooming', 'scrollViewDidEndZooming', 'scrollViewDidZoom']
+    - M.typeInheritanceChain contains_any ['UIScrollViewDelegate', 'UIViewController', 'UITableViewController', 'UICollectionViewController']
+- id: UITEXTFIELD_DELEGATE
+  description: UITextField delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['textFieldShouldBeginEditing', 'textFieldDidBeginEditing', 'textFieldShouldEndEditing', 'textFieldDidEndEditing', 'textField', 'textFieldShouldClear', 'textFieldShouldReturn', 'textFieldDidChangeSelection']
+    - M.typeInheritanceChain contains_any ['UITextFieldDelegate', 'UIViewController']
+- id: UITEXTVIEW_DELEGATE
+  description: UITextView delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['textViewShouldBeginEditing', 'textViewShouldEndEditing', 'textViewDidBeginEditing', 'textViewDidEndEditing', 'textViewDidChange', 'textViewDidChangeSelection']
+    - M.typeInheritanceChain contains_any ['UITextViewDelegate', 'UIViewController']
+- id: UISEARCHBAR_DELEGATE
+  description: UISearchBar delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['searchBarShouldBeginEditing', 'searchBarTextDidBeginEditing', 'searchBarShouldEndEditing', 'searchBarTextDidEndEditing', 'searchBar', 'searchBarCancelButtonClicked', 'searchBarSearchButtonClicked', 'searchBarTextDidChange']
+    - M.typeInheritanceChain contains_any ['UISearchBarDelegate', 'UIViewController']
+- id: SYSTEM_TYPE_NAMES
+  description: Swift/Foundation/UIKit standard type names
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.isSystemSymbol == true
+- id: STANDARD_PROTOCOL_REQUIREMENTS
+  description: Properties/methods required by standard protocols
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'method']
+    - P.name in ['id', 'errorDescription', 'recoverySuggestion', 'underlyingError', 'failureReason', 'helpAnchor', 'description', 'debugDescription', 'rawValue', 'hashValue', 'hash', 'allCases', 'localizedDescription']
+- id: CODABLE_PROPERTIES
+  description: All properties of types conforming to Codable
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.parent.typeInheritanceChain contains_any ['Codable', 'Decodable', 'Encodable']
+- id: CODABLE_CODING_KEYS
+  description: CodingKeys enum for Codable
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind in ['enum', 'enumCase']
+    - E.name == 'CodingKeys'
+- id: RAWREPRESENTABLE_ENUM_CASES
+  description: All cases of enums adopting RawRepresentable
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.parent.typeInheritanceChain contains 'RawRepresentable'
+- id: CODABLE_ENUM_CASES
+  description: All cases of enums adopting Codable
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.parent.typeInheritanceChain contains_any ['Codable', 'Decodable', 'Encodable']
+- id: CASEITERABLE_ENUM_CASES
+  description: All cases of enums adopting CaseIterable
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.parent.typeInheritanceChain contains 'CaseIterable'
+- id: VERY_COMMON_PROPERTY_NAMES_CORE
+  description: Most basic common properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['id', 'key', 'name', 'title', 'message', 'data', 'date', 'url', 'path', 'token', 'user', 'error', 'result', 'value', 'type', 'status', 'state', 'image', 'text', 'description', 'info', 'content', 'body', 'header', 'footer', 'label', 'placeholder']
+- id: VERY_COMMON_PROPERTY_NAMES_UI
+  description: Very common UI-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['view', 'button', 'imageView', 'titleLabel', 'tableView', 'collectionView', 'scrollView', 'stackView', 'contentView', 'backgroundView', 'containerView', 'navigationController', 'viewController', 'window', 'cell', 'alert', 'appearance', 'layout', 'colors', 'font', 'color', 'backgroundColor', 'tintColor', 'textColor']
+- id: VERY_COMMON_PROPERTY_NAMES_LAYOUT
+  description: Common layout-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['frame', 'bounds', 'center', 'size', 'width', 'height', 'top', 'bottom', 'left', 'right', 'leading', 'trailing', 'spacing', 'padding', 'margin', 'inset', 'offset', 'cornerRadius', 'borderWidth', 'lineWidth', 'lineHeight', 'lineSpacing', 'itemSize', 'itemSpacing', 'sectionInset', 'contentInset', 'contentOffset', 'contentSize', 'intrinsicContentSize']
+- id: VERY_COMMON_PROPERTY_NAMES_STATE
+  description: Common state-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['isEnabled', 'isHidden', 'isSelected', 'isHighlighted', 'isOpaque', 'isFocused', 'isLoading', 'isValid', 'isEmpty', 'isEditing', 'isAnimating', 'isUserInteractionEnabled', 'alpha', 'tag', 'index', 'count', 'capacity', 'length', 'duration', 'interval', 'delay', 'progress']
+- id: VERY_COMMON_PROPERTY_NAMES_COLLECTION
+  description: Common collection/array-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['items', 'item', 'elements', 'element', 'array', 'arr', 'list', 'dictionary', 'dict', 'set', 'collection', 'dataSource', 'sections', 'section', 'rows', 'row', 'columns', 'column', 'cells', 'cell', 'nodes', 'node', 'children', 'child', 'parent', 'root', 'head', 'tail', 'first', 'last', 'current', 'next', 'previous', 'prev']
+- id: VERY_COMMON_PROPERTY_NAMES_NETWORKING
+  description: Common networking/API-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['request', 'response', 'session', 'task', 'url', 'urlRequest', 'urlSession', 'baseURL', 'endpoint', 'endPoint', 'path', 'query', 'parameters', 'headers', 'method', 'statusCode', 'errorCode', 'errorMessage', 'timeout', 'httpMethod', 'httpBody', 'httpHeaders', 'contentType', 'boundary', 'accessToken', 'refreshToken']
+- id: VERY_COMMON_PROPERTY_NAMES_STORAGE
+  description: Common data storage-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['storage', 'cache', 'caches', 'database', 'context', 'store', 'userDefaults', 'keychain', 'fileManager', 'documentDirectory', 'cacheDirectory', 'temporaryDirectory', 'filePath', 'fileName', 'fileURL', 'directory', 'container']
+- id: VERY_COMMON_PROPERTY_NAMES_DELEGATE
+  description: Common delegate/callback-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['delegate', 'dataSource', 'handler', 'callback', 'completion', 'completionHandler', 'action', 'target', 'selector', 'observer', 'coordinator', 'router', 'presenter']
+- id: VERY_COMMON_PROPERTY_NAMES_VIEWMODEL
+  description: MVVM/Architecture pattern related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['viewModel', 'model', 'repository', 'service', 'useCase', 'provider', 'manager', 'factory', 'builder', 'validator', 'formatter', 'parser', 'encoder', 'decoder']
+- id: VERY_COMMON_PROPERTY_NAMES_REACTIVE
+  description: Reactive programming related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['disposeBag', 'cancellable', 'cancellables', 'subscription', 'subscriptions', 'publisher', 'subject', 'observable', 'observer', 'subscriber', 'sink', 'binding']
+- id: VERY_COMMON_PROPERTY_NAMES_TIME
+  description: Common time/date-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['date', 'timestamp', 'time', 'timeInterval', 'duration', 'delay', 'timeout', 'createdAt', 'updatedAt', 'deletedAt', 'startTime', 'endTime', 'startDate', 'endDate', 'calendar', 'dateFormatter', 'timeZone', 'locale']
+- id: VERY_COMMON_PROPERTY_NAMES_GENERIC
+  description: Common generic words
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['identifier', 'uuid', 'uid', 'uniqueID', 'indexPath', 'field', 'fields', 'attribute', 'attributes', 'property', 'properties', 'metadata', 'settings', 'configuration', 'config', 'options', 'preferences', 'defaults', 'parameters', 'params', 'arguments', 'args']
+- id: VERY_COMMON_PROPERTY_NAMES_CONTROL_FLOW
+  description: Control flow related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['start', 'stop', 'pause', 'resume', 'finish', 'cancel', 'reset', 'restart', 'retry', 'success', 'failure', 'completed', 'cancelled', 'suspended', 'running', 'waiting', 'ready', 'none', 'unknown', 'undefined', 'null', 'zero', 'empty', 'full', 'max', 'min', 'default', 'custom']
+- id: VERY_COMMON_PROPERTY_NAMES_USER
+  description: User data related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['user', 'userID', 'userInfo', 'userData', 'username', 'userName', 'nickname', 'nickName', 'email', 'password', 'phone', 'profile', 'profileImage', 'profileImageURL', 'avatar', 'avatarURL', 'bio', 'age', 'gender', 'birthday', 'location']
+- id: COMMON_METHOD_NAMES_SETUP
+  description: Initialization/setup methods (UIKit subclasses only)
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['configure', 'setup', 'setupUI', 'setupViews', 'setupConstraints', 'setupLayout', 'initialize', 'prepareForReuse', 'prepare', 'reset']
+    - M.typeInheritanceChain contains_any ['UIView', 'UIViewController', 'UITableViewCell', 'UICollectionViewCell', 'UICollectionReusableView']
+- id: COMMON_METHOD_NAMES_UPDATE
+  description: Update methods (UIKit subclasses only)
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['update', 'updateUI', 'updateViews', 'refresh', 'refreshUI', 'refreshData', 'reload', 'reloadData', 'redraw', 'render']
+    - M.typeInheritanceChain contains_any ['UIView', 'UIViewController', 'UITableViewCell', 'UICollectionViewCell']
+- id: COMMON_METHOD_NAMES_CRUD
+  description: Common CRUD and control methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['create', 'read', 'update', 'delete', 'save', 'load', 'fetch', 'get', 'set', 'add', 'addInput', 'addOutput', 'remove', 'removeInput', 'removeOutput', 'insert', 'append', 'pop', 'push', 'clear', 'removeAll', 'start', 'startCapture', 'startRecording', 'startAnimation', 'stop', 'stopCapture', 'stopRecording', 'stopAnimation', 'pause', 'resume', 'reset', 'record', 'beginConfiguration', 'commitConfiguration', 'observeValue', 'requestAuthorization']
+- id: COMMON_METHOD_NAMES_ACTIONS
+  description: Action/event handler methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['buttonTapped', 'buttonPressed', 'buttonClicked', 'buttonAction', 'handleTap', 'handlePress', 'handleAction', 'didTap', 'didPress', 'action', 'handleEvent', 'addButtonTapped', 'closeButtonTapped', 'doneButtonTapped', 'cancelButtonTapped', 'saveButtonTapped']
+- id: COMMON_METHOD_NAMES_NAVIGATION
+  description: Navigation-related methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['navigate', 'push', 'pop', 'present', 'dismiss', 'show', 'hide', 'showAlert', 'showError', 'showMessage', 'showLoading', 'hideLoading']
+- id: TEST_CLASSES
+  description: All test classes inheriting from XCTestCase
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind == 'class'
+    - C.typeInheritanceChain contains 'XCTestCase'
+- id: TEST_CLASSES_BY_NAME
+  description: Test classes identified by name (XCTestCase inheritance only)
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind == 'class'
+    - C.name contains 'Test'
+    - C.typeInheritanceChain contains 'XCTestCase'
+- id: TEST_METHODS
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.name starts_with 'test'
+    - M.typeInheritanceChain contains 'XCTestCase'
+- id: TEST_SETUP_TEARDOWN
+  description: Test setup/teardown methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['setUp', 'tearDown', 'setUpWithError', 'tearDownWithError']
+- id: TEST_CLASS_ALL_MEMBERS
+  description: All members inside test classes
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind in ['property', 'method']
+    - M.parent.typeInheritanceChain contains 'XCTestCase'
+- id: TEST_COMMON_PROPERTIES
+  description: Commonly used properties in tests
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['sut', 'systemUnderTest', 'expectation', 'expectations', 'mockData', 'testData', 'stub', 'mock', 'spy', 'fake', 'dummy', 'dummy2', 'dummy3', 'dummy4']
+- id: DELEGATE_PATTERN_PROPERTIES
+  description: Delegate pattern properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name contains 'delegate'
+- id: DELEGATE_PATTERN_PROPERTIES_DATASOURCE
+  description: Data source pattern properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name contains 'dataSource'
+- id: INITIALIZERS_AND_OPERATORS
+  description: All initializers and operators
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['initializer', 'operator']
+- id: EQUATABLE_OPERATORS
+  description: Equatable protocol == operator
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name == '=='
+- id: NSCODING_CLASSES_AND_MEMBERS
+  description: All members of classes adopting NSCoding/NSSecureCoding
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind in ['property', 'method']
+    - M.parent.typeInheritanceChain contains_any ['NSCoding', 'NSSecureCoding']
+- id: MODEL_ANNOTATION_CLASSES
+  description: All members of classes with @Model annotation (SwiftData)
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind in ['property', 'method']
+    - M.parent.attributes contains '@Model'
+- id: NSMANAGED_PROPERTIES
+  description: Properties with @NSManaged attribute (CoreData)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.attributes contains '@NSManaged'
+- id: NSMANAGEDOBJECT_SUBCLASSES
+  description: All members of NSManagedObject subclasses
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind in ['property', 'method']
+    - M.parent.typeInheritanceChain contains 'NSManagedObject'
+- id: SWIFTUI_VIEW_TYPES
+  description: SwiftUI View-related types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['class', 'struct']
+    - S.typeInheritanceChain contains 'View'
+- id: SWIFTUI_VIEW_BODY
+  description: SwiftUI View body property
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name == 'body'
+    - P.parent.typeInheritanceChain contains 'View'
+- id: SWIFTUI_COMMON_PROPERTIES
+  description: Conventionally used properties in SwiftUI
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['body', 'content', 'binding', 'dismiss', 'preview', 'previews', 'liveValue', 'testValue', 'previewValue', 'placeholder', 'label', 'destination']
+- id: SWIFTUI_ENVIRONMENT_PROPERTIES
+  description: SwiftUI Environment/State properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.attributes contains_any ['@Environment', '@EnvironmentObject', '@StateObject', '@ObservedObject', '@State', '@Binding', '@Published']
+- id: SWIFTUI_ENVIRONMENT_KEYS
+  description: SwiftUI Environment keys
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class']
+    - S.name in ['EnvironmentValues', 'DependencyValues', 'Key']
+- id: SWIFTUI_APP_PROTOCOL
+  description: Structs adopting SwiftUI App protocol
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'struct'
+    - S.typeInheritanceChain contains 'App'
+- id: COORDINATOR_PATTERN_TYPES
+  description: Coordinator pattern related types
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind in ['class', 'protocol']
+    - C.name contains 'Coordinator'
+- id: DATA_STRUCTURE_TYPES
+  description: Internal data structure implementation types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['class', 'struct']
+    - S.name in ['Node', 'LRUCache', 'Cache', 'CacheNode', 'LinkedList', 'LinkedListNode', 'Queue', 'Stack', 'Tree', 'TreeNode', 'Graph', 'GraphNode', 'Heap']
+- id: DATA_STRUCTURE_MEMBERS
+  description: Internal data structure member properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['head', 'tail', 'prev', 'previous', 'next', 'node', 'currentNode', 'newNode', 'capacity', 'maxLength', 'minLength', 'front', 'rear', 'priority']
+- id: DATA_STRUCTURE_METHODS
+  description: Internal data structure methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['moveToHead', 'moveToFront', 'moveToTail', 'popFirst', 'popLast', 'pushFront', 'pushBack', 'prepend', 'dequeue', 'enqueue', 'peek', 'search', 'find', 'contains']
+- id: COREGRAPHICS_STRUCT_MEMBERS
+  description: Members of CoreGraphics structs like CGAffineTransform
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['a', 'b', 'c', 'd', 'tx', 'ty', 'x', 'y', 'width', 'height']
+    - P.parent.name in ['CGAffineTransform', 'CGPoint', 'CGSize', 'CGRect']
+- id: COREGRAPHICS_TRANSFORM_MEMBERS_EXTENDED
+  description: Matrix components of CGAffineTransform
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['m1', 'm11', 'm12', 'm2']
+    - P.parent.name == 'CGAffineTransform'
+- id: FOUNDATION_NOTIFICATION_NAMES
+  description: Notification.Name extensions
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.name == 'Notification.Name'
+- id: REACTIVE_EXTENSIONS
+  description: Reactive extensions
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.name == 'Reactive'
+- id: ATTRIBUTED_STRING_PROPERTIES
+  description: AttributedString-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['attrString', 'paragraphStyle']
+- id: SYSTEM_COLLECTION_TYPES
+  description: Swift system collection types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class']
+    - S.name in ['Array', 'Sequence']
+- id: MAPKIT_PROTOCOL_REQUIREMENTS
+  description: MapKit protocol requirements
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['coordinate', 'region', 'placemark']
+- id: IBOUTLET_PROPERTIES
+  description: Properties with @IBOutlet attribute
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.attributes contains '@IBOutlet'
+- id: IBACTION_METHODS
+  description: Methods with @IBAction attribute
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.attributes contains '@IBAction'
+- id: IBINSPECTABLE_PROPERTIES
+  description: Properties with @IBInspectable attribute
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.attributes contains '@IBInspectable'
+- id: BUSINESS_HOURS_PROPERTIES
+  description: Business hours related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['business_hours', 'last_order', 'holiday', 'rest_hours', 'parking', 'cost_range']
+- id: RESTAURANT_PROPERTIES
+  description: Restaurant-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['restaurant_name', 'feeling_tags', 'image_urls', 'star', 'approved']
+- id: TIMER_PROPERTIES
+  description: Timer-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['timer', 'startedTime', 'learningTime', 'studyTime', 'todayTime', 'totalTime', 'weekday', 'weekdays', 'weekly', 'daily', 'weeklyStudyLog', 'dailyStudyLog']
+- id: CALENDAR_DATE_PROPERTIES
+  description: Calendar/date-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['calendar', 'calendarView', 'selectedDate', 'day', 'weekday', 'hour', 'minute', 'second', 'yyyyMMdd', 'yyyyMMddTHHmmSS', 'yyyyMMddhhmmssZZZZZ']
+- id: VALIDATION_ERROR_TYPES
+  description: Validation error enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['emptyViolation', 'lengthViolation', 'emojiContained', 'duplicated']
+- id: LOCALIZATION_KEYS
+  description: Localization key properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['categoryAddMessage', 'categoryErrorTitle', 'categoryNameCountError', 'categoryNameIsDuplicated', 'deleteAlertMessage', 'imageNotSafeMessage', 'imageNotSafeTitle', 'signoutMessage', 'skipLoginTitle', 'timeZoneMessage', 'withdrawalMessage', 'logoSubTitle', 'learningTitle', 'dailyStudyLog', 'weeklyStudyLog']
+- id: ACTION_SHEET_PROPERTIES
+  description: Alert/ActionSheet related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['alert', 'actionSheet', 'actions', 'cancelAction']
+- id: SOCIAL_FOLLOW_PROPERTIES
+  description: Social follow related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['follow', 'unfollow', 'followingData', 'followingID', 'friend', 'friendNickname', 'alreadyFriend']
+- id: AUTH_LOGIN_PROPERTIES
+  description: Authentication/login related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['appleLogin', 'googleLogin', 'auth', 'identityToken', 'signOut', 'signout', 'withdrawal', 'developer']
+- id: CATEGORY_PROPERTIES
+  description: Category related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['category', 'categories', 'categoryID', 'primaryCategory', 'addCategory', 'deleteCategory', 'modifyCategory']
+- id: CHART_VIEW_PROPERTIES
+  description: Chart view related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['dailyData', 'weeklyLearingChart']
+- id: PROFILE_SETTINGS_PROPERTIES
+  description: Profile settings related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['myNickname', 'editProfile', 'profileSetting', 'myPage']
+- id: UI_CONTROL_METHODS
+  description: UI control action methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['addFriendButtonTapped', 'categorySettingButtonDidTapped', 'cancleButtonDidTapped', 'closeButtonTapped', 'dismissButtonDidTapped', 'doneButtonTapped', 'followButtonDidTapped', 'loginSkipButtonDidTapped', 'myPageButtonTapped', 'profileImageViewTapped', 'saveButtonDidTapped', 'signUpButtonTapped', 'timerButtonAction', 'unfollowButtonDidTapped', 'colorWellChanged', 'handleAuthorizationAppleIDButtonPress', 'handleGoogleLoginButton']
+- id: REFRESH_UPDATE_METHODS
+  description: Refresh/update methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['refreshFreindsStatus', 'refreshStudyLog', 'didChangeTimeZone', 'didChangeValue', 'proximityDidChange']
+- id: COMMON_ENUM_CASES
+  description: Common enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['yes', 'no', 'cancel', 'done', 'ok', 'close', 'delete', 'save', 'none', 'unknown', 'general']
+- id: JSON_API_PROPERTIES
+  description: Commonly used properties in JSON/API responses (extended)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['accessToken', 'refreshToken', 'email', 'nickname', 'profileImageURL', 'createdAt', 'updatedAt', 'timestamp', 'statusCode', 'errorMessage', 'categories', 'items', 'myself', 'cost']
+- id: REUSABLE_CELL_METHODS
+  description: Reusable cell related methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['dequeueReusableCell', 'register', 'setCollectionViewLayout']
+- id: NOTIFICATION_OBSERVER_METHODS
+  description: Notification observer methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['didChangeTimeZone', 'didChangeValue', 'proximityDidChange']
+- id: VERY_COMMON_PROPERTY_NAMES_EXTENDED
+  description: Additional very common property names
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['rect', 'isSelected', 'custom', 'menu', 'etc', 'subject', 'subject']
+- id: PROTOCOL_SUFFIX_TYPES
+  description: Types ending with Protocol
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'protocol'
+    - S.name contains 'Protocol'
+- id: SECTION_ENUM_TYPES
+  description: Section enum types
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind in ['enum', 'enumCase']
+    - E.name == 'Section'
+- id: PATHS_ENUM_TYPES
+  description: Paths enum types
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind in ['enum', 'enumCase']
+    - E.name == 'Paths'
+- id: COMMON_VARIABLE_NAMES
+  description: Very generic variable names
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['picker', 'device', 'general', 'motion', 'orientation', 'etc', 'ping', 'search', 'tryAagin']
+- id: AVFOUNDATION_SUBCLASSES
+  description: Subclasses of major AVFoundation classes
+  pattern:
+  - find:
+      target: C
+  - where:
+    - C.kind in ['class', 'struct']
+    - C.typeInheritanceChain contains_any ['AVCaptureSession', 'AVCaptureDevice', 'AVCaptureInput', 'AVCaptureOutput', 'AVCaptureConnection', 'AVCapturePhotoOutput', 'AVCaptureVideoDataOutput', 'AVCaptureMetadataOutput', 'AVCaptureFileOutput', 'AVCaptureMovieFileOutput', 'AVAsset', 'AVPlayer', 'AVPlayerItem', 'AVPlayerLayer']
+- id: AVFOUNDATION_DELEGATE_METHODS
+  description: AVFoundation delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['captureOutput', 'fileOutput', 'metadataOutput', 'photoOutput', 'capturePhoto', 'didFinishProcessingPhoto', 'didFinishRecordingTo', 'didStartRecordingTo', 'didPauseRecording', 'didResumeRecording']
+    - M.typeInheritanceChain contains_any ['AVCapturePhotoCaptureDelegate', 'AVCaptureFileOutputRecordingDelegate', 'AVCaptureVideoDataOutputSampleBufferDelegate', 'AVCaptureMetadataOutputObjectsDelegate']
+- id: VERY_COMMON_PROPERTY_NAMES_MEDIA
+  description: Common media/camera-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['session', 'device', 'input', 'inputs', 'output', 'outputs', 'connection', 'preset', 'format', 'settings', 'metadata', 'buffer', 'buffers', 'imageBuffer', 'pixelBufferPool', 'pixelBufferAttributes', 'sampleBuffer', 'asset', 'imageData', 'jpegData', 'ciImage', 'croppedImage', 'photoOutput', 'videoOutput', 'audioOutput', 'metadataOutput', 'fileOutput', 'depthDataOutput', 'captureOutput', 'previewLayer', 'renderer', 'videoTracks', 'audioTracks', 'videoSettings', 'audioSettings']
+- id: VERY_COMMON_PROPERTY_NAMES_CAMERA
+  description: Common camera settings properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['focusMode', 'exposureMode', 'flashMode', 'torchMode', 'whiteBalanceMode', 'lensPosition', 'exposureDuration', 'iso', 'whiteBalanceGains', 'whiteBalanceTemperature', 'whiteBalanceTint', 'videoZoomFactor', 'aspectRatio', 'frameRate', 'maxFrameRate', 'minFrameRate', 'frameDuration', 'dimensions', 'videoDimensions', 'cleanAperture', 'layoutSize', 'viewport', 'timeRange', 'timescale', 'videoTime', 'currentTime', 'isRecording', 'isRunning', 'isReady', 'isSupported', 'isFocusPointOfInterestSupported', 'isAutoFocusEnabled', 'isFlashAvailable', 'isTorchAvailable', 'isAdjustingFocus', 'isAdjustingExposure', 'isAdjustingWhiteBalance']
+- id: VERY_COMMON_PROPERTY_NAMES_CAPTURE
+  description: Common capture/recording properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['deviceTypes', 'devicePosition', 'authorizationStatus', 'metadataObjectTypes', 'metadataObjectsDelegate', 'fileType', 'filename', 'outputURL', 'photoQualityPrioritization', 'automaticallyConfiguresApplicationAudioSession', 'autoenablesDefaultLighting']
+- id: COMMON_ENUM_CASES_EXTENDED
+  description: Additional common enum cases (camera/media)
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['auto', 'manual', 'off', 'on', 'active', 'inactive', 'authorized', 'notAuthorized', 'notDetermined', 'denied', 'restricted', 'photo', 'video', 'audio', 'movie', 'cinematic', 'square', 'standard', 'custom', 'twitter', 'clip', 'clamped', 'microphone', 'wideAngleCamera', 'ultraWideAngleCamera', 'telephotoCamera', 'dualCamera', 'duoCamera', 'dualWideCamera', 'tripleCamera', 'arKit', 'arKitWithoutAudio', 'videoWithoutAudio', 'videoWithAudio']
+- id: AVFOUNDATION_TYPES
+  description: AVFoundation major types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['class', 'struct']
+    - S.name in ['AVCaptureDevice', 'AVCaptureSession', 'AVCaptureInput', 'AVCaptureDeviceInput', 'AVCaptureOutput', 'AVCapturePhotoOutput', 'AVCaptureVideoDataOutput', 'AVCaptureMetadataOutput', 'AVCaptureConnection', 'AVCaptureVideoOrientation', 'CMSampleBuffer', 'CIContext', 'CVPixelBuffer', 'AVAsset', 'AVPlayer', 'AVPlayerItem']
+- id: AVFOUNDATION_NESTED_TYPES
+  description: AVFoundation nested types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['enum', 'struct']
+    - S.name in ['AVCaptureDevice.Format', 'AVCaptureDevice.Position', 'AVCaptureDevice.WhiteBalanceGains', 'AVCaptureDevice.FocusMode', 'AVCaptureDevice.ExposureMode', 'AVCaptureDevice.FlashMode', 'AVCaptureDevice.TorchMode']
+- id: SWIFTUI_VIEW_SUFFIX
+  description: SwiftUI view types ending with View
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class']
+    - S.name contains 'View'
+- id: SWIFTUI_APP_BUNDLE_WIDGET
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.name contains_any ['App', 'Bundle', 'Widget']
+    - S.typeInheritanceChain contains_any ['App', 'WidgetConfiguration']
+- id: SWIFTUI_PICKER_LINK_ALERT
+  description: SwiftUI UI component types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'struct'
+    - S.name in ['NavigationLink', 'Alert', 'Color', 'Button', 'TextField', 'Picker', 'Toggle', 'Slider', 'Stepper', 'DatePicker', 'ColorPicker', 'Link', 'Menu', 'ContextMenu']
+- id: SWIFTUI_EXTENDED_PROPERTIES
+  description: Additional SwiftUI properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['binding', 'animation', 'systemImage', 'tint', 'phase', 'entry', 'timeline', 'kind', 'verticalSizeClass', 'horizontalSizeClass', 'widgetFamily', 'confetti', 'whatsNewCollection']
+- id: SWIFTUI_VIEW_MODIFIERS
+  description: SwiftUI view modifier methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['onAppear', 'onDisappear', 'onChange', 'onReceive', 'openURL', 'requestReview', 'requestPermission', 'showSheet', 'closeButtonTapped', 'addButtonTapped', 'saveButtonTapped', 'alertDismissed']
+- id: LIFECYCLE_STAGE_ENUM_CASES
+  description: Lifecycle stage enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['baby', 'child', 'adolescent', 'youngAdult', 'adult', 'middleAge', 'oldAge']
+- id: STATUS_STATE_ENUM_CASES
+  description: State-related enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['pending', 'completed', 'uncompleted', 'verified', 'unverified', 'isCompleted', 'isDismissed']
+- id: THEME_COLOR_ENUM_CASES
+  description: Theme/color enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['light', 'dark', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'gray', 'cyan', 'indigo', 'mint']
+- id: SIZE_QUALITY_ENUM_CASES
+  description: Size/quality enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['small', 'medium', 'large', 'low', 'high']
+- id: COREDATA_ENTITY_SUFFIX
+  description: CoreData entities ending with Entity
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'class'
+    - S.name contains 'Entity'
+- id: COREDATA_CONTEXT_PROPERTIES
+  description: CoreData context-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['entity', 'fetchRequest', 'viewContext', 'mainQueue', 'backgroundContext', 'persistentContainer', 'defaultValue', 'intValue', 'doubleValue', 'stringValue', 'boolValue', 'dateValue']
+- id: VERY_COMMON_PROPERTY_NAMES_SWIFTUI_EXTENDED
+  description: Additional common SwiftUI-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['ids', 'columns', 'life', 'lifeCalendar', 'lifeGoals', 'lifeExpectancy', 'selectedTab', 'showSheet', 'currentYear', 'weekOfYear', 'dateComponents', 'now', 't', 'products', 'product', 'purchase', 'trigger', 'notificationCenter', 'notifications', 'didCompleteOnboarding', 'didScheduleWeeklyNotification', 'isWeeklyNotificationEnabled', 'listType']
+- id: IAP_PURCHASE_PROPERTIES
+  description: In-app purchase related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['products', 'product', 'purchase', 'userCancelled']
+- id: IAP_PURCHASE_ERROR_TYPES
+  description: In-app purchase error types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'enum'
+    - S.name == 'PurchaseError'
+- id: SWIFTUI_COMMON_METHODS
+  description: Commonly used methods in SwiftUI
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['getSnapshot', 'getTimeline', 'initialize', 'send', 'about']
+- id: SWIFT_COLLECTION_EXTENSION_TYPES
+  description: Swift collection and extension types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class', 'protocol']
+    - S.name in ['Array', 'Dictionary', 'Sequence', 'Character', 'Notification.Name', 'Reactive']
+- id: UIKIT_ADDITIONAL_TYPES
+  description: Additional UIKit types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'class'
+    - S.name in ['UIFont', 'UINavigationController', 'UITabBarController', 'UIPageControl', 'UIRefreshControl', 'UIPresentationController']
+- id: UITEXTFIELD_EXTENDED_DELEGATE
+  description: Additional UITextField delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['textFieldDidEndEditing', 'textFieldShouldReturn', 'textFieldDidChangeSelection', 'textFieldEditingChanged']
+    - M.typeInheritanceChain contains_any ['UITextFieldDelegate', 'UIViewController']
+- id: UISCROLLVIEW_EXTENDED_DELEGATE
+  description: Additional UIScrollView delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['scrollViewDidEndDecelerating', 'scrollViewWillEndDragging', 'scrollViewDidEndDragging']
+    - M.typeInheritanceChain contains_any ['UIScrollViewDelegate', 'UIViewController']
+- id: UIIMAGEPICKER_DELEGATE
+  description: UIImagePickerController delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['imagePickerController', 'imagePickerControllerDidCancel']
+- id: WEBVIEW_DELEGATE
+  description: WebView delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['webViewDidClose', 'webViewDidReachBottom', 'webView']
+- id: NOTIFICATION_CENTER_DELEGATE
+  description: Notification/message delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['userNotificationCenter', 'messageComposeViewController']
+- id: OBSERVER_PATTERN_METHODS
+  description: Observer pattern methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['addObserver', 'removeObserver']
+- id: ENCODING_DECODING_METHODS
+  description: Encoding/decoding related methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['encode', 'decode', 'decompress', 'unwrap', 'verify', 'sign']
+- id: ACTION_VERB_METHODS
+  description: Common action methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['apply', 'activate', 'clear', 'run', 'rotate', 'snapshot', 'calculate', 'publish', 'detect']
+- id: NAVIGATION_UI_METHODS
+  description: Navigation/UI manipulation methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['popToViewController', 'moveItem', 'removeItem', 'setDelegate', 'setImage', 'setShadow', 'selectItem']
+- id: VERY_COMMON_PROPERTY_NAMES_UI_EXTENDED
+  description: Additional common UI-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['barAppearance', 'maskLayer', 'layerClass', 'preferredStatusBarStyle', 'presentationAnchor', 'refreshControl', 'doneButton', 'addButton', 'dismissButton', 'cancelAction', 'subviews', 'displayLink', 'gesture', 'videoPreviewLayer']
+- id: VERY_COMMON_PROPERTY_NAMES_LAYOUT_EXTENDED
+  description: Additional common layout properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['leftMargin', 'rightMargin', 'topMargin', 'bottomMargin', 'collectionViewLayout', 'scaleX', 'scaleY']
+- id: VERY_COMMON_PROPERTY_NAMES_DATA_EXTENDED
+  description: Additional common data/state properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['dependencies', 'payload', 'features', 'numberOfSections', 'numberOfItems', 'reuseIdentifier', 'targetItem', 'presentationCount', 'presentationIndex', 'displayMode']
+- id: VERY_COMMON_PROPERTY_NAMES_COLOR_STYLE
+  description: Color/style-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['rgb', 'currentPageIndicatorTintColor', 'pageIndicatorTintColor', 'brightness', 'separator', 'focus', 'hint', 'caption', 'detail']
+- id: VERY_COMMON_PROPERTY_NAMES_NETWORKING_EXTENDED
+  description: Additional common networking properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['diskCapacity', 'memoryCapacity', 'canonicalRequest', 'downloadTask', 'pathString', 'directoryName', 'fileExtension', 'encoding', 'scheme', 'responseValidationFailed']
+- id: VERY_COMMON_PROPERTY_NAMES_COREDATA_EXTENDED
+  description: Additional CoreData properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['getCaches', 'setCaches', 'toEntity', 'fullPath']
+- id: EXPOSURE_NOTIFICATION_PROPERTIES
+  description: Exposure Notification framework properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['algorithm', 'keyData', 'keyId', 'rollingPeriod', 'rollingStartNumber', 'transmissionRisk', 'daySummaries', 'exposureNotificationEnabled', 'exposureNotificationStatus', 'getDiagnosisKeys', 'detectExposures', 'setExposureNotificationEnabled']
+- id: HEALTH_CERTIFICATE_PROPERTIES
+  description: Health certificate related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['hcert', 'euHealthCertV1', 'iss', 'exp', 'iat', 'iss', 'lightCert', 'sign1', 'signature', 'payload']
+- id: DEVICE_ORIENTATION_ENUM_CASES
+  description: Device orientation enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['portrait', 'portraitUpsideDown', 'landscapeLeft', 'landscapeRight', 'faceUp', 'faceDown', 'left', 'right']
+- id: STATE_STATUS_ENUM_CASES_EXTENDED
+  description: State enum case extensions
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['normal', 'disabled', 'suspended', 'enabled', 'failed', 'success', 'valid', 'invalid', 'ready', 'handled', 'unauthorized', 'unsupported']
+- id: HTTP_METHOD_ENUM_CASES
+  description: HTTP method enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['post', 'patch', 'replace']
+- id: QUEUE_THREAD_ENUM_CASES
+  description: Queue/thread enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['main', 'background', 'mainQueue']
+- id: LAYOUT_MODE_ENUM_CASES
+  description: Layout/mode enum cases
+  pattern:
+  - find:
+      target: E
+  - where:
+    - E.kind == 'enumCase'
+    - E.name in ['single', 'group', 'test', 'normal']
+- id: SWIFTUI_COMPONENT_TYPES
+  description: SwiftUI component types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class']
+    - S.name in ['Alert', 'Color', 'Button', 'Image', 'Font', 'NavigationLink']
+- id: COORDINATOR_PROTOCOL_SUFFIX
+  description: Types ending with Coordinator/Protocol
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['protocol', 'class']
+    - S.name contains_any ['Coordinator', 'Protocol']
+- id: LIFECYCLE_OVERRIDE_METHODS
+  description: Lifecycle override methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['layoutSubviews', 'traitCollectionDidChange']
+    - M.typeInheritanceChain contains_any ['UIView', 'UIViewController']
+- id: CONVERSION_METHODS
+  description: Conversion-related methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['toHexString', 'toEntity', 'asURLRequest']
+- id: STRING_PROCESSING_METHODS
+  description: String processing methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['isEmoji', 'underline']
+- id: SWIFT_FOUNDATION_COLLECTION_TYPES
+  description: Swift basic collection and extension types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class', 'protocol']
+    - S.name in ['Array', 'Dictionary', 'Sequence', 'Character', 'Notification.Name', 'Reactive']
+- id: UIKIT_CORE_ADDITIONAL_TYPES
+  description: Additional UIKit core types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'class'
+    - S.name in ['UIFont', 'UINavigationController', 'UITabBarController', 'UIPageViewController']
+- id: CGAFFINETRANSFORM_MATRIX_COMPONENTS
+  description: CGAffineTransform matrix components (m1, m11, m12, m2)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['m1', 'm11', 'm12', 'm2', 'm21', 'm22']
+- id: ARCHITECTURE_SINGLE_WORD_TYPES
+  description: Single-word architecture types (Action, State, Feature, etc.)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'enum', 'protocol']
+    - S.name in ['Action', 'State', 'Feature', 'Screen', 'Tab', 'Theme', 'Alert', 'Color', 'Button', 'Font', 'Image', 'Style', 'Config', 'Event', 'Message', 'Person', 'Status']
+- id: SWIFTUI_ADDITIONAL_PROPERTIES
+  description: Additional essential SwiftUI properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['binding', 'placeholder', 'about', 'medium', 'shared']
+- id: SWIFTUI_ADDITIONAL_METHODS
+  description: Additional essential SwiftUI methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['onAppear', 'openURL', 'requestReview', 'requestPermission', 'initialize', 'send']
+- id: BUTTON_ACTION_METHODS_EXTENDED
+  description: Button action method extensions (Tapped suffix)
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['addButtonTapped', 'closeButtonTapped', 'saveButtonTapped', 'alertDismissed', 'showSheet']
+- id: UITEXTFIELD_COMPLETE_DELEGATE
+  description: Complete UITextField delegate extensions
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['textFieldDidEndEditing', 'textFieldShouldReturn', 'textFieldDidChangeSelection', 'textFieldDidBeginEditing']
+- id: LOCATION_MANAGER_PROPERTIES
+  description: Location manager related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['locationManager', 'mapView']
+- id: ADDITIONAL_COMMON_METHODS
+  description: Additional common methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['apply', 'activate', 'clear', 'deleteAllItems', 'getIsInBusiness', 'setExposureNotificationEnabled', 'getDiagnosisKeys', 'detectExposures']
+- id: ADDITIONAL_COMMON_PROPERTIES
+  description: Additional common properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['setting', 'settings', 'semaphore', 'resizableImage', 'navigationTitle']
+- id: CORELOCATION_DELEGATE_METHODS
+  description: CoreLocation delegate methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['locationManager', 'didUpdateLocations', 'didFailWithError', 'didChangeAuthorization']
+- id: SWIFTUI_DEPENDENCY_ENVIRONMENT_TYPES
+  description: SwiftUI dependency/environment types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'enum', 'protocol']
+    - S.name in ['DependencyValues', 'EnvironmentValues', 'Key', 'EnvironmentKey']
+- id: SWIFTUI_APP_WIDGET_ENTITY_TYPES
+  description: SwiftUI App/Widget/Entity suffix types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class']
+    - S.name matches '(App|Widget|Bundle|Entity|Picker)$'
+- id: SWIFTUI_LIFECYCLE_METHODS_EXTENDED
+  description: SwiftUI lifecycle method extensions
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['onAppear', 'onDisappear', 'openURL', 'requestReview', 'requestPermission', 'initialize', 'send']
+- id: UI_ACTION_TAPPED_METHODS
+  description: UI action methods ending with Tapped
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name matches 'Tapped$'
+- id: UI_DISMISSED_METHODS
+  description: Methods ending with Dismissed
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name matches 'Dismissed$'
+- id: UI_STATE_IS_PROPERTIES
+  description: State properties starting with is
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name matches '^is[A-Z]'
+    - P.name in ['isCompleted', 'isDismissed', 'isEnabled', 'isSelected', 'isHighlighted']
+- id: SWIFTUI_BINDING_PROPERTIES
+  description: SwiftUI Binding-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['binding', 'showSheet', 'showAlert']
+- id: BACKTICK_KEYWORDS
+  description: Swift reserved words wrapped in backticks
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.name matches '^`.*`$'
+    - S.name in ['`default`', '`in`', '`none`', '`true`', '`false`']
+- id: COLOR_NAME_PROPERTIES
+  description: Color name properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['apple', 'blue', 'green', 'red', 'approveGreen', 'darkBlue', 'warningRed', 'gray1', 'gray2', 'gray3', 'gray4', 'gray5']
+- id: DATE_FORMAT_STRINGS
+  description: Date format string properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name matches '(yyyy|MM|dd|HH|mm|ss|ZZZZZ)'
+- id: LOCALIZATION_LANGUAGE_CODES
+  description: Language codes and localization keywords
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'enumCase']
+    - P.name in ['en', 'ko', 'ja', 'zh', 'vi', 'th', 'fil', 'about', 'allow', 'enable', 'enabled']
+- id: UI_SINGLE_WORD_KEYWORDS
+  description: Single-word UI keywords
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'enumCase']
+    - P.name in ['about', 'banner', 'background', 'base', 'clock', 'console', 'days', 'focus', 'from', 'index', 'key', 'link', 'logger', 'major', 'ms', 'my', 'no', 'ok', 'secondary', 'sentences', 'subtitle', 'warning', 'yes']
+- id: FRAMEWORK_SPECIFIC_PROPERTIES
+  description: Framework-specific properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['getDiagnosisKeys', 'detectExposures', 'setExposureNotificationEnabled', 'config', 'manufacturer', 'bluetoothOff']
+- id: SPECIAL_TEST_CLASSES
+  description: Special test classes (ZZZZZ, typos, etc.)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'class'
+    - S.name matches '(Test|Tests|ZZZZZ)'
+- id: UISCROLLVIEW_COMPLETE_DELEGATE
+  description: Complete UIScrollView delegate
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['scrollViewDidScroll', 'scrollViewWillEndDragging', 'scrollViewDidEndDecelerating', 'scrollViewWillBeginDragging']
+- id: COMMON_VERB_METHODS_EXTENDED
+  description: Common verb method extensions
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['apply', 'activate', 'download', 'publish', 'submit', 'cancel']
+- id: NETWORK_ASYNC_PROPERTIES
+  description: Network/async-related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['canonicalRequest', 'invalidResponse', 'invalidToken', 'jsonDecoder']
+- id: COLLECTION_COUNT_PROPERTIES
+  description: Collection count/section properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['numberOfSections', 'numberOfItems', 'lineCount']
+- id: SPECIAL_STATE_KEYWORDS
+  description: Special state keywords (already, not, etc.)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'enumCase']
+    - P.name in ['alreayFriend', 'notFriend', 'noData', 'duplicatedName']
+- id: COORDINATOR_PROTOCOL_SPECIAL_TYPES
+  description: Special Coordinator/Protocol types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['protocol', 'class']
+    - S.name matches '(Protocol|Coordinator)$'
+    - S.name in ['FreindAddResultViewProtocol', 'Coordinator']
+- id: SWIFT_FOUNDATION_BASIC_TYPES
+  description: Swift/Foundation basic types (Array, Dictionary, Sequence)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'protocol', 'enum']
+    - S.name in ['Array', 'Dictionary', 'Sequence', 'Character', 'Set', 'Optional', 'Result']
+- id: NESTED_TYPES_WITH_DOT
+  description: Dot-separated nested types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class', 'enum']
+    - S.name matches '\.'
+    - S.name in ['CBOR.Tag', 'Notification.Name', 'TracingCellViewModel.State', 'URLRequest.CachePolicy']
+- id: EXPOSURE_NOTIFICATION_TYPES
+  description: ExposureNotification framework types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'class', 'enum']
+    - S.name matches '^EN'
+    - S.name in ['ENActivityFlags', 'ENManager', 'ENTemporaryExposureKey', 'ENExposureConfiguration']
+- id: SECURITY_CBOR_TYPES
+  description: CBOR and security-related types
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'enum']
+    - S.name in ['CBOR', 'CharacterSet', 'LanguageCode', 'ValueSet', 'ValueSetItem']
+- id: SPECIAL_ARCHITECTURE_TYPES
+  description: Special architecture types (DisplayMode, Layout, Metadata)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['struct', 'enum']
+    - S.name in ['DisplayMode', 'Layout', 'Metadata', 'Content', 'RetryReason', 'AssociatedKeys']
+- id: NUMBERED_SUFFIX_PROPERTIES
+  description: Number suffix properties (gray1~5, key2, etc.)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name matches '[a-z]+[0-9]$'
+    - P.name in ['gray1', 'gray2', 'gray3', 'gray4', 'gray5', 'key2', 'm1', 'm2']
+- id: DATE_FORMAT_CONSTANTS_EXTENDED
+  description: Date format constant extensions (yyyyMMdd, etc.)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'let']
+    - P.name matches '(yyyy|MM|dd|HH|mm|ss|ZZZZZ)'
+    - P.name in ['yyyyMMdd', 'yyyyMMddTHHmmSS', 'yyyyMMddhhmmssZZZZZ']
+- id: SPECIAL_TEST_KEYWORDS
+  description: Special test keywords (ZZZZZ, test alone)
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind in ['class', 'property']
+    - S.name in ['ZZZZZ', 'test']
+- id: BRAND_LOGIN_PROPERTIES
+  description: Brand/login related properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['apple', 'google', 'authorizationController', 'presentationAnchor', 'bundleID']
+- id: UIKIT_ADDITIONAL_LIFECYCLE
+  description: Additional UIKit lifecycle methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['layoutSubviews', 'traitCollectionDidChange', 'didSelectDate']
+- id: EXPOSURE_NOTIFICATION_METHODS
+  description: ExposureNotification specialized methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['setExposureNotificationEnabled', 'getDiagnosisKeys', 'detectExposures', 'updateRiskSummary']
+- id: SHORT_VERB_NOUN_PROPERTIES
+  description: Short verb/noun properties (3-6 chars)
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'method']
+    - P.name in ['test', 'fail', 'pass', 'next', 'prev', 'stop', 'play', 'skip', 'group', 'stack', 'queue']
+- id: EN_ROLLING_TRANSMISSION_PROPERTIES
+  description: ExposureNotification rolling/transmission related
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['rollingPeriod', 'rollingStartNumber', 'transmissionRisk', 'startNumber', 'pruneIntervalNumber']
+- id: SPECIAL_UI_CONTAINER_PROPERTIES
+  description: Special UI container properties
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['contentViewController', 'pageViewController', 'tabBarController', 'windowScene']
+- id: HEALTH_CERTIFICATE_EXTENDED_PROPERTIES
+  description: Health certificate specialized property extensions
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind == 'property'
+    - P.name in ['euHealthCertV1', 'hcert', 'lightCert', 'bluetoothOff', 'disabledBackground']
+- id: SPECIAL_STATE_METHODS
+  description: Special state-related methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['canInit', 'supportsHaptics', 'isNewVersionAvailable', 'isURLLoaded']
+- id: PROTOCOL_SPECIAL_TYPES_EXTENDED
+  description: Protocol special type extensions
+  pattern:
+  - find:
+      target: S
+  - where:
+    - S.kind == 'protocol'
+    - S.name matches 'Protocol$'
+    - S.name in ['FreindAddResultViewProtocol', 'Coordinator']
+- id: LOCALIZATION_RESOURCE_CONSTANTS
+  description: Localization and resource constants
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'let']
+    - P.name in ['formatName', 'formatDescription', 'invalidScheme', 'responseValidationFailed', 'uniqueIdentifier']
+- id: COLLECTION_COUNT_EXTENDED
+  description: Collection count extensions
+  pattern:
+  - find:
+      target: P
+  - where:
+    - P.kind in ['property', 'method']
+    - P.name in ['numberOfSections', 'presentationCount', 'presentationIndex']
+- id: SPECIAL_ACTION_METHODS
+  description: Special action methods
+  pattern:
+  - find:
+      target: M
+  - where:
+    - M.kind == 'method'
+    - M.name in ['startLoading', 'stopLoading', 'suspend', 'finish', 'getCaches', 'setCaches', 'snapshot']
+
